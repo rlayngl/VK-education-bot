@@ -11,6 +11,35 @@ CONFIRMATION_TOKEN = "2262c629"
 vk_session = vk_api.VkApi(token=TOKEN)
 vk = vk_session.get_api()
 
+keyboard = {
+    "one_time": False,
+    "buttons": [
+        [
+            {
+                "action": {
+                    "type": "text",
+                    "label": "Расписание"
+                },
+                "color": "primary"
+            },
+            {
+                "action": {
+                    "type": "text",
+                    "label": "Занятия"
+                },
+                "color": "primary"
+            },
+            {
+                "action": {
+                    "type": "text",
+                    "label": "Проекты"
+                },
+                "color": "primary"
+            }
+        ]
+    ]
+}
+
 @app.route('/', methods=['POST'])
 def callback():
     data = request.json
@@ -22,16 +51,37 @@ def callback():
         user_id = data['object']['message']['from_id']
         text = data['object']['message']['text'].lower()
 
-        if "проект" in text:
-            answer = "Проекты доступны на сайте VK Education."
+        if text == "/start":
+            vk.messages.send(
+                user_id=user_id,
+                message="Привет! Я бот VK Education. Выбери, что тебя интересует:",
+                random_id=0,
+                keyboard=json.dumps(keyboard)
+            )
+        elif "расписание" in text:
+            vk.messages.send(
+                user_id=user_id,
+                message="Расписание занятий можно найти здесь: https://edu.vk.com/schedule",
+                random_id=0
+            )
+        elif "занятия" in text:
+            vk.messages.send(
+                user_id=user_id,
+                message="Занятия проводятся регулярно онлайн. Следите за анонсами на сайте VK Education.",
+                random_id=0
+            )
+        elif "проект" in text:
+            vk.messages.send(
+                user_id=user_id,
+                message="Все проекты доступны по ссылке: https://edu.vk.com/projects",
+                random_id=0
+            )
         else:
-            answer = "Извините, я пока не знаю ответа."
-
-        vk.messages.send(
-            user_id=user_id,
-            message=answer,
-            random_id=0
-        )
+            vk.messages.send(
+                user_id=user_id,
+                message="Я пока не знаю ответа на этот вопрос. Напиши /start, чтобы увидеть доступные команды.",
+                random_id=0
+            )
 
     return "ok"
 
