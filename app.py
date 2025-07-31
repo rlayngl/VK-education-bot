@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 
 TOKEN = "vk1.a.pHrouDYDYTT_kZ-PZ4IAxZEAALVGs2I_wciv8DSnN2LVsUR8epKl0Mg6DYaBGrh9iSuKs61nY4pQETpss3HDlmd8xKCmj3aDp2jolkI7W09i6D-2lEHQxudYaHpmuZ0xyFHHCImX2838UX67vFiqedj3VmlHIiKZsGcPabpebnphmH3yBJ8mkiM_BGUDNEx7Akl0QvEgFQdU9TXjiyXpEQ"
-CONFIRMATION_TOKEN = "токен_подтверждения_из_ВК"
+CONFIRMATION_TOKEN = "2262c629"
 
 vk_session = vk_api.VkApi(token=TOKEN)
 vk = vk_session.get_api()
