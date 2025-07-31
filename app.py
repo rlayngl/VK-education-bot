@@ -15,30 +15,25 @@ keyboard = {
     "one_time": False,
     "buttons": [
         [
-            {
-                "action": {
-                    "type": "text",
-                    "label": "Расписание"
-                },
-                "color": "primary"
-            },
-            {
-                "action": {
-                    "type": "text",
-                    "label": "Занятия"
-                },
-                "color": "primary"
-            },
-            {
-                "action": {
-                    "type": "text",
-                    "label": "Проекты"
-                },
-                "color": "primary"
-            }
+            {"action": {"type": "text", "label": "Расписание"}, "color": "primary"},
+            {"action": {"type": "text", "label": "Занятия"}, "color": "primary"},
+            {"action": {"type": "text", "label": "Проекты"}, "color": "primary"},
         ]
     ]
 }
+
+curse_words = ["пизда", "бля", "хуй", "пиздец", "хуе", "ебать", "ебал", "ебл"]
+look_like_curse_but_not_one = ["оскорблять", "потреблять", "употреблять", "сабля", "колеблются", "колеблетесь",
+                               "застрахуй", "подстрахуй", "страхуй"]
+
+
+def watch_manners(message_text):
+    for ex in look_like_curse_but_not_one:
+        if ex in message_text:
+            return False
+
+    return any(word in message_text for word in curse_words)
+
 
 @app.route('/', methods=['POST'])
 def callback():
@@ -51,12 +46,33 @@ def callback():
         user_id = data['object']['message']['from_id']
         text = data['object']['message']['text'].lower()
 
+        if watch_manners(text):
+            vk.messages.send(
+                user_id=user_id,
+                message="Пожалуйста, не используй ненормативную лексику.",
+                random_id=0
+            )
+            return "ok"
+
         if text == "/start":
             vk.messages.send(
                 user_id=user_id,
                 message="Привет! Я бот VK Education. Выбери, что тебя интересует:",
                 random_id=0,
                 keyboard=json.dumps(keyboard)
+            )
+        elif text == "/help":
+            help_message = (
+                "Справка:\n\n"
+                "/start — запустить бота\n"
+                "/help — список доступных команд\n\n"
+                "Или выбери нужный пункт с клавиатуры:\n"
+                "Расписание\n Занятия\n Проекты"
+            )
+            vk.messages.send(
+                user_id=user_id,
+                message=help_message,
+                random_id=0
             )
         elif "расписание" in text:
             vk.messages.send(
@@ -84,6 +100,7 @@ def callback():
             )
 
     return "ok"
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
