@@ -1,7 +1,11 @@
 from flask import Flask, request
 import vk_api
 import json
+from rapidfuzz import fuzz
 import os
+
+with open("faq.json", "r", encoding="utf-8") as f:
+    faq = json.load(f)
 
 app = Flask(__name__)
 
@@ -34,6 +38,21 @@ def watch_manners(message_text):
 
     return any(word in message_text for word in curse_words)
 
+def search_faq(text):
+    best_match = None
+    highest_score = 0
+
+    for question, answer in faq.items():
+        score = fuzz.partial_ratio(text, question)
+        if score > highest_score:
+            highest_score = score
+            best_match = answer
+
+    if highest_score > 80:  # порог достоверности
+        return best_match
+
+    return None
+
 
 @app.route('/', methods=['POST'])
 def callback():
@@ -50,6 +69,15 @@ def callback():
             vk.messages.send(
                 user_id=user_id,
                 message="Пожалуйста, не используй ненормативную лексику.",
+                random_id=0
+            )
+            return "ok"
+
+        faq_answer = search_faq(text)
+        if faq_answer:
+            vk.messages.send(
+                user_id=user_id,
+                message=faq_answer,
                 random_id=0
             )
             return "ok"
