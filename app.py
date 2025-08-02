@@ -38,18 +38,21 @@ def watch_manners(message_text):
 
     return any(word in message_text for word in curse_words)
 
-def search_faq(text):
+def search_faq(text, short=False):
     best_match = None
     highest_score = 0
+    best_entry = None
 
-    for question, answer in faq.items():
+    for question, entry in faq.items():
         score = fuzz.partial_ratio(text, question)
         if score > highest_score:
             highest_score = score
-            best_match = answer
+            best_entry = entry
 
-    if highest_score > 80:  # порог достоверности
-        return best_match
+    if highest_score > 80 and best_entry:
+        if short and best_entry.get("type") == "yesno":
+            return best_entry.get("short")
+        return best_entry.get("answer")
 
     return None
 
@@ -69,6 +72,15 @@ def callback():
             vk.messages.send(
                 user_id=user_id,
                 message="Пожалуйста, не используй ненормативную лексику.",
+                random_id=0
+            )
+            return "ok"
+
+        faq_short_answer = search_faq(text, short=True)
+        if faq_short_answer:
+            vk.messages.send(
+                user_id=user_id,
+                message=faq_short_answer,
                 random_id=0
             )
             return "ok"
