@@ -108,6 +108,7 @@ def callback():
             help_message = (
                 "Справка:\n\n"
                 "/start — запустить бота\n"
+                "/faq — список часто задаваемых вопросов\n"
                 "/help — список доступных команд\n\n"
                 "Используй кнопки ниже или задай интересующий вопрос:\n"
                 "«Как попасть в программу», «Можно ли совмещать работу», и т.д."
@@ -125,6 +126,12 @@ def callback():
                 random_id=0
             )
             return "ok"
+        if text == "связаться":
+            vk.messages.send(
+                user_id=user_id,
+                message="Связаться с нами можно тут: https://education.vk.company/contacts",
+                random_id=0,
+            )
         elif "расписание" in text:
             vk.messages.send(
                 user_id=user_id,
@@ -134,7 +141,7 @@ def callback():
         elif "занятия" in text:
             vk.messages.send(
                 user_id=user_id,
-                message="Занятия проводятся регулярно онлайн. Следите за анонсами на сайте VK Education.",
+                message="Занятия проводятся регулярно онлайн. Следи за анонсами на сайте VK Education.",
                 random_id=0
             )
         elif "проект" in text:
