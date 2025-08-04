@@ -2,10 +2,6 @@ from flask import Flask, request
 import vk_api
 import json
 from rapidfuzz import fuzz
-import os
-
-with open("faq.json", "r", encoding="utf-8") as f:
-    faq = json.load(f)
 
 app = Flask(__name__)
 
@@ -15,6 +11,13 @@ CONFIRMATION_TOKEN = "2262c629"
 vk_session = vk_api.VkApi(token=TOKEN)
 vk = vk_session.get_api()
 
+with open("faq.json", "r", encoding="utf-8") as f:
+    faq = json.load(f)
+
+curse_words = ["пизда", "бля", "хуй", "пиздец", "хуе", "ебать", "ебал", "ебл"]
+look_like_curse_but_not_one = ["оскорблять", "потреблять", "употреблять", "сабля", "колеблются", "колеблетесь",
+                               "колеблется", "застрахуй", "подстрахуй", "страхуй"]
+
 keyboard = {
     "one_time": False,
     "buttons": [
@@ -22,13 +25,13 @@ keyboard = {
             {"action": {"type": "text", "label": "Расписание"}, "color": "primary"},
             {"action": {"type": "text", "label": "Занятия"}, "color": "primary"},
             {"action": {"type": "text", "label": "Проекты"}, "color": "primary"},
+        ],
+        [
+            {"action": {"type": "text", "label": "Частые вопросы"}, "color": "secondary"},
+            {"action": {"type": "text", "label": "Связаться"}, "color": "secondary"},
         ]
     ]
 }
-
-curse_words = ["пизда", "бля", "хуй", "пиздец", "хуе", "ебать", "ебал", "ебл"]
-look_like_curse_but_not_one = ["оскорблять", "потреблять", "употреблять", "сабля", "колеблются", "колеблетесь",
-                               "застрахуй", "подстрахуй", "страхуй"]
 
 
 def watch_manners(message_text):
@@ -38,8 +41,8 @@ def watch_manners(message_text):
 
     return any(word in message_text for word in curse_words)
 
+
 def search_faq(text, short=False):
-    best_match = None
     highest_score = 0
     best_entry = None
 
@@ -106,14 +109,22 @@ def callback():
                 "Справка:\n\n"
                 "/start — запустить бота\n"
                 "/help — список доступных команд\n\n"
-                "Или выбери нужный пункт с клавиатуры:\n"
-                "Расписание\n Занятия\n Проекты"
+                "Используй кнопки ниже или задай интересующий вопрос:\n"
+                "«Как попасть в программу», «Можно ли совмещать работу», и т.д."
             )
             vk.messages.send(
                 user_id=user_id,
                 message=help_message,
                 random_id=0
             )
+        elif text == "/faq" or text == "частые вопросы":
+            questions = "\n".join([f"• {q}" for q in list(faq.keys())[:10]])
+            vk.messages.send(
+                user_id=user_id,
+                message=f"🔎 Часто задаваемые вопросы:\n\n{questions}\n\nТы можешь задать любой из них",
+                random_id=0
+            )
+            return "ok"
         elif "расписание" in text:
             vk.messages.send(
                 user_id=user_id,
@@ -132,10 +143,22 @@ def callback():
                 message="Все проекты доступны по ссылке: https://edu.vk.com/projects",
                 random_id=0
             )
+        elif "контакт" in text:
+            vk.messages.send(
+                user_id=user_id,
+                message="Связаться с нами можно через форму на сайте VK Education или по email: support@edu.vk.com",
+                random_id=0
+            )
+        elif "как попасть" in text or "отбор" in text:
+            vk.messages.send(
+                user_id=user_id,
+                message="Чтобы попасть в программу, нужно заполнить анкету и пройти отбор.",
+                random_id=0
+            )
         else:
             vk.messages.send(
                 user_id=user_id,
-                message="Я пока не знаю ответа на этот вопрос. Напиши /start, чтобы увидеть доступные команды.",
+                message="Я пока не знаю ответа на этот вопрос. Переформулируй вопрос или напиши /start, чтобы увидеть доступные команды.",
                 random_id=0
             )
 
