@@ -135,7 +135,7 @@ def callback():
         elif "расписание" in text:
             vk.messages.send(
                 user_id=user_id,
-                message="Расписание занятий можно найти здесь: https://edu.vk.com/schedule",
+                message="Расписание занятий можно найти здесь: https://education.vk.company/schedule",
                 random_id=0
             )
         elif "занятия" in text:
@@ -147,7 +147,7 @@ def callback():
         elif "проект" in text:
             vk.messages.send(
                 user_id=user_id,
-                message="Все проекты доступны по ссылке: https://edu.vk.com/projects",
+                message="Все проекты доступны по ссылке: https://education.vk.company/education_projects",
                 random_id=0
             )
         elif "контакт" in text:
