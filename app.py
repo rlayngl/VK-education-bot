@@ -71,15 +71,6 @@ def callback():
         user_id = data['object']['message']['from_id']
         text = data['object']['message']['text'].lower()
 
-        if text == "/start":
-            vk.messages.send(
-                user_id=user_id,
-                message="Привет! Я бот VK Education. Выбери, что тебя интересует:",
-                random_id=0,
-                keyboard=json.dumps(keyboard)
-            )
-            return "ok"
-
         if watch_manners(text):
             vk.messages.send(
                 user_id=user_id,
@@ -88,12 +79,26 @@ def callback():
             )
             return "ok"
 
+        greetings = ["привет", "хай", "здорова", "добрый день", "доброе утро", "здравствуй", "хэллоу", "уассап",
+                     "добрый вечер", "доброй ночи", "доброго вечера", "доброй ночи", "доброго утра", "доброго дня"]
+        if text in greetings or text == "/start":
+            vk.messages.send(
+                user_id=user_id,
+                message=(
+                    "Привет! Я бот VK Education. Задавай, что тебя интересует!\n"
+                    "Для помощи можешь воспользоваться командой /help."
+                ),
+                random_id=0,
+                keyboard=json.dumps(keyboard)
+            )
+            return "ok"
+
         if text == "/help":
             help_message = (
                 "Справка:\n\n"
-                "/start — запустить бота\n"
+                "/start — вернуться к началу\n"
                 "/faq — список часто задаваемых вопросов\n"
-                "/help — список доступных команд\n\n"
+                "/help — список доступных команд (использовано сейчас)\n\n"
                 "Используй кнопки ниже или задай интересующий вопрос:\n"
                 "«Как попасть в программу», «Можно ли совмещать работу», и т.д."
             )
@@ -102,6 +107,7 @@ def callback():
                 message=help_message,
                 random_id=0
             )
+            return "ok"
         elif text == "/faq" or text == "частые вопросы":
             questions = "\n".join([f"• {q}" for q in list(faq.keys())[:10]])
             vk.messages.send(
@@ -116,36 +122,42 @@ def callback():
                 message="Связаться с нами можно тут: https://education.vk.company/contacts",
                 random_id=0,
             )
+            return "ok"
         elif "расписание" in text:
             vk.messages.send(
                 user_id=user_id,
                 message="Расписание занятий можно найти здесь: https://education.vk.company/schedule",
                 random_id=0
             )
+            return "ok"
         elif "занятия" in text:
             vk.messages.send(
                 user_id=user_id,
                 message="Занятия проводятся регулярно онлайн. Следи за анонсами на сайте VK Education.",
                 random_id=0
             )
+            return "ok"
         elif "проект" in text:
             vk.messages.send(
                 user_id=user_id,
                 message="Все проекты доступны по ссылке: https://education.vk.company/education_projects",
                 random_id=0
             )
+            return "ok"
         elif "контакт" in text:
             vk.messages.send(
                 user_id=user_id,
                 message="Связаться с нами можно через форму на сайте VK Education или по email: support@edu.vk.com",
                 random_id=0
             )
+            return "ok"
         elif "как попасть" in text or "отбор" in text:
             vk.messages.send(
                 user_id=user_id,
                 message="Чтобы попасть в программу, нужно заполнить анкету и пройти отбор.",
                 random_id=0
             )
+            return "ok"
 
         faq_short_answer = search_faq(text, short=True)
         if faq_short_answer:
@@ -174,6 +186,7 @@ def callback():
             ),
             random_id=0
         )
+        return "ok"
 
     return "ok"
 
