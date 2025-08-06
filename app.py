@@ -2,6 +2,7 @@ from flask import Flask, request
 import vk_api
 import json
 from rapidfuzz import fuzz
+import urllib.parse
 
 app = Flask(__name__)
 
@@ -38,7 +39,6 @@ def watch_manners(message_text):
     for ex in look_like_curse_but_not_one:
         if ex in message_text:
             return False
-
     return any(word in message_text for word in curse_words)
 
 
@@ -71,6 +71,15 @@ def callback():
         user_id = data['object']['message']['from_id']
         text = data['object']['message']['text'].lower()
 
+        if text == "/start":
+            vk.messages.send(
+                user_id=user_id,
+                message="Привет! Я бот VK Education. Выбери, что тебя интересует:",
+                random_id=0,
+                keyboard=json.dumps(keyboard)
+            )
+            return "ok"
+
         if watch_manners(text):
             vk.messages.send(
                 user_id=user_id,
@@ -79,32 +88,7 @@ def callback():
             )
             return "ok"
 
-        faq_short_answer = search_faq(text, short=True)
-        if faq_short_answer:
-            vk.messages.send(
-                user_id=user_id,
-                message=faq_short_answer,
-                random_id=0
-            )
-            return "ok"
-
-        faq_answer = search_faq(text)
-        if faq_answer:
-            vk.messages.send(
-                user_id=user_id,
-                message=faq_answer,
-                random_id=0
-            )
-            return "ok"
-
-        if text == "/start":
-            vk.messages.send(
-                user_id=user_id,
-                message="Привет! Я бот VK Education. Выбери, что тебя интересует:",
-                random_id=0,
-                keyboard=json.dumps(keyboard)
-            )
-        elif text == "/help":
+        if text == "/help":
             help_message = (
                 "Справка:\n\n"
                 "/start — запустить бота\n"
@@ -162,15 +146,36 @@ def callback():
                 message="Чтобы попасть в программу, нужно заполнить анкету и пройти отбор.",
                 random_id=0
             )
-        else:
+
+        faq_short_answer = search_faq(text, short=True)
+        if faq_short_answer:
             vk.messages.send(
                 user_id=user_id,
-                message="Я пока не знаю ответа на этот вопрос. Переформулируй вопрос или напиши /start, чтобы увидеть доступные команды.",
+                message=faq_short_answer,
                 random_id=0
             )
+            return "ok"
+
+        faq_answer = search_faq(text)
+        if faq_answer:
+            vk.messages.send(
+                user_id=user_id,
+                message=faq_answer,
+                random_id=0
+            )
+            return "ok"
+
+        google_link = "https://www.google.com/search?q=" + urllib.parse.quote(text)
+        vk.messages.send(
+            user_id=user_id,
+            message=(
+                    "Я пока не знаю ответа на этот вопрос. Переформулируй вопрос или напиши /start, чтобы увидеть доступные команды.\n"
+                    "Либо можешь перейти по этой ссылке, здесь можно найти вообще все: " + google_link
+            ),
+            random_id=0
+        )
 
     return "ok"
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
