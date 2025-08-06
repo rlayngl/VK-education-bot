@@ -125,6 +125,25 @@ def callback():
                 random_id=0
             )
             return "ok"
+
+        faq_short_answer = search_faq(text, short=True)
+        if faq_short_answer:
+            vk.messages.send(
+                user_id=user_id,
+                message=faq_short_answer,
+                random_id=0
+            )
+            return "ok"
+
+        faq_answer = search_faq(text)
+        if faq_answer:
+            vk.messages.send(
+                user_id=user_id,
+                message=faq_answer,
+                random_id=0
+            )
+            return "ok"
+
         if text == "связаться":
             vk.messages.send(
                 user_id=user_id,
@@ -164,24 +183,6 @@ def callback():
             vk.messages.send(
                 user_id=user_id,
                 message="Чтобы попасть в программу, нужно заполнить анкету и пройти отбор.",
-                random_id=0
-            )
-            return "ok"
-
-        faq_short_answer = search_faq(text, short=True)
-        if faq_short_answer:
-            vk.messages.send(
-                user_id=user_id,
-                message=faq_short_answer,
-                random_id=0
-            )
-            return "ok"
-
-        faq_answer = search_faq(text)
-        if faq_answer:
-            vk.messages.send(
-                user_id=user_id,
-                message=faq_answer,
                 random_id=0
             )
             return "ok"
