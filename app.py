@@ -1,6 +1,7 @@
 from flask import Flask, request
 import vk_api
 import json
+import re
 from rapidfuzz import fuzz
 import urllib.parse
 
@@ -36,10 +37,18 @@ keyboard = {
 
 
 def watch_manners(message_text):
-    for ex in look_like_curse_but_not_one:
-        if ex in message_text:
-            return False
-    return any(word in message_text for word in curse_words)
+    text = message_text.lower()
+    words = re.findall(r'\w+', text)
+
+    for word in words:
+        if word in look_like_curse_but_not_one:
+            continue
+
+        for root in curse_words:
+            if root in word:
+                return True
+
+    return False
 
 
 def search_faq(text, short=False):
@@ -189,6 +198,7 @@ def callback():
         return "ok"
 
     return "ok"
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
