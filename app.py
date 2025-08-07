@@ -2,8 +2,10 @@ from flask import Flask, request
 import vk_api
 import json
 import re
+import time
 from rapidfuzz import fuzz
 import urllib.parse
+from collections import defaultdict
 
 app = Flask(__name__)
 
@@ -35,6 +37,7 @@ keyboard = {
     ]
 }
 
+last_topic = defaultdict(lambda: {"topic": None, "timestamp": 0})
 
 def watch_manners(message_text):
     text = message_text.lower()
@@ -117,6 +120,7 @@ def callback():
                 random_id=0
             )
             return "ok"
+
         elif text == "/faq" or text == "частые вопросы":
             questions = "\n".join([f"• {q}" for q in list(faq.keys())[:19]])
             vk.messages.send(
@@ -126,8 +130,10 @@ def callback():
             )
             return "ok"
 
-        faq_short_answer = search_faq(text, short=True)
+        faq_short_answer, matched_q = search_faq(text, short=True)
         if faq_short_answer:
+            last_topic[user_id]["topic"] = matched_q
+            last_topic[user_id]["timestamp"] = time.time()
             vk.messages.send(
                 user_id=user_id,
                 message=faq_short_answer,
@@ -135,8 +141,10 @@ def callback():
             )
             return "ok"
 
-        faq_answer = search_faq(text)
+        faq_answer, matched_q = search_faq(text)
         if faq_answer:
+            last_topic[user_id]["topic"] = matched_q
+            last_topic[user_id]["timestamp"] = time.time()
             vk.messages.send(
                 user_id=user_id,
                 message=faq_answer,
@@ -187,6 +195,20 @@ def callback():
             )
             return "ok"
 
+        topic = last_topic.get(user_id)
+        if topic and time.time() - topic["timestamp"] < 300:
+            user_last_topic = topic["topic"]
+            search_link = f"https://education.vk.company/search?query={urllib.parse.quote(user_last_topic)}"
+            vk.messages.send(
+                user_id=user_id,
+                message=(
+                    "Не уверен, но, возможно, это связано с прошлым вопросом.\n"
+                    f"Попробуй поиск на сайте: {search_link}"
+                ),
+                random_id=0
+            )
+            return "ok"
+
         google_link = "https://www.google.com/search?q=" + urllib.parse.quote(text)
         vk.messages.send(
             user_id=user_id,
@@ -203,3 +225,18 @@ def callback():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
+
+
+# ,
+# "расскажи что-то о саше": {
+#     "answer": "Честно, он мне ничего не говорит. Единственное, что он твердит постоянно, что любит Дашу. Если б я знал, что такое любить и кто такая эта Даша. Говорит, очень красивая и крутая...",
+#     "type": "open"
+# },
+# "саша": {
+#     "answer": "Наверное, ты говоришь о создателе. О Высоцком Александре.",
+#     "type": "open"
+# },
+# "даша": {
+#     "answer": "Такая невероятная, такая красиваааая, такая замечательная и прекрасная....Ой, кажется, я говорю словами создателя.",
+#     "type": "open"
+# }
