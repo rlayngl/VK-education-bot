@@ -74,6 +74,16 @@ def search_faq(text, short=False):
     return None, None
 
 
+def search_related(text, last_question):
+    if last_question in faq:
+        related_questions = faq[last_question].get("related", [])
+        for rel_q in related_questions:
+            score = fuzz.partial_ratio(text, rel_q)
+            if score > 75:
+                return faq[rel_q]["answer"], rel_q
+    return None, None
+
+
 @app.route('/', methods=['POST'])
 def callback():
     data = request.json
@@ -197,28 +207,28 @@ def callback():
 
         topic = last_topic.get(user_id)
         user_last_topic = topic["topic"] if topic else None
-        if topic and topic["topic"]:
+
+        if user_last_topic:
+            related_answer, related_match = search_related(text, user_last_topic)
+            if related_answer:
+                last_topic[user_id]["topic"] = related_match
+                vk.messages.send(
+                    user_id=user_id,
+                    message=related_answer,
+                    random_id=0
+                )
+                return "ok"
+
             search_link = f"https://education.vk.company/search?query={urllib.parse.quote(str(user_last_topic))}"
             vk.messages.send(
                 user_id=user_id,
                 message=(
-                    "Не уверен, но, возможно, это связано с прошлым вопросом.\n"
+                    "Я пока не знаю точного ответа на это.\n"
                     f"Попробуй поиск на сайте: {search_link}"
                 ),
                 random_id=0
             )
             return "ok"
-
-        google_link = "https://www.google.com/search?q=" + urllib.parse.quote(text)
-        vk.messages.send(
-            user_id=user_id,
-            message=(
-                    "Я пока не знаю ответа на этот вопрос. Переформулируй вопрос или напиши /faq, чтобы увидеть варианты вопросов.\n"
-                    "Либо можешь перейти по этой ссылке, возможно поможет: " + google_link
-            ),
-            random_id=0
-        )
-        return "ok"
 
     return "ok"
 
