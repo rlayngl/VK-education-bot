@@ -2,7 +2,6 @@ from flask import Flask, request
 import vk_api
 import json
 import re
-import time
 from rapidfuzz import fuzz
 import urllib.parse
 from collections import defaultdict
@@ -37,7 +36,8 @@ keyboard = {
     ]
 }
 
-last_topic = defaultdict(lambda: {"topic": None, "timestamp": 0})
+last_topic = defaultdict(lambda: {"topic": None})
+
 
 def watch_manners(message_text):
     text = message_text.lower()
@@ -56,20 +56,22 @@ def watch_manners(message_text):
 
 def search_faq(text, short=False):
     highest_score = 0
+    best_question = None
     best_entry = None
 
     for question, entry in faq.items():
         score = fuzz.partial_ratio(text, question)
         if score > highest_score:
             highest_score = score
+            best_question = question
             best_entry = entry
 
     if highest_score > 80 and best_entry:
         if short and best_entry.get("type") == "yesno":
-            return best_entry.get("short")
-        return best_entry.get("answer")
+            return best_entry.get("short"), best_question
+        return best_entry.get("answer"), best_question
 
-    return None
+    return None, None
 
 
 @app.route('/', methods=['POST'])
@@ -133,7 +135,6 @@ def callback():
         faq_short_answer, matched_q = search_faq(text, short=True)
         if faq_short_answer:
             last_topic[user_id]["topic"] = matched_q
-            last_topic[user_id]["timestamp"] = time.time()
             vk.messages.send(
                 user_id=user_id,
                 message=faq_short_answer,
@@ -144,7 +145,6 @@ def callback():
         faq_answer, matched_q = search_faq(text)
         if faq_answer:
             last_topic[user_id]["topic"] = matched_q
-            last_topic[user_id]["timestamp"] = time.time()
             vk.messages.send(
                 user_id=user_id,
                 message=faq_answer,
@@ -196,9 +196,9 @@ def callback():
             return "ok"
 
         topic = last_topic.get(user_id)
-        if topic and time.time() - topic["timestamp"] < 300:
-            user_last_topic = topic["topic"]
-            search_link = f"https://education.vk.company/search?query={urllib.parse.quote(user_last_topic)}"
+        user_last_topic = topic["topic"] if topic else None
+        if topic and topic["topic"]:
+            search_link = f"https://education.vk.company/search?query={urllib.parse.quote(str(user_last_topic))}"
             vk.messages.send(
                 user_id=user_id,
                 message=(
@@ -225,7 +225,6 @@ def callback():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)
-
 
 # ,
 # "расскажи что-то о саше": {
