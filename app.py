@@ -197,7 +197,7 @@ def callback():
                 random_id=0
             )
             return "ok"
-        elif "спасибо" or "благодарю" in text:
+        elif "спасибо" in text or "благодарю" in text:
             vk.messages.send(
                 user_id=user_id,
                 message="Пожалуйста! Обращайся, а я тебе помогу.",
