@@ -17,7 +17,7 @@ vk = vk_session.get_api()
 with open("faq.json", "r", encoding="utf-8") as f:
     faq = json.load(f)
 
-curse_words = ["пизда", "бля", "хуй", "пиздец", "хуе", "ебать", "ебал", "ебл"]
+curse_words = ["пизда", "бля", "хуй", "пиздец", "хуе", "ебать", "ебал", "ебл", "гандон", "пидор", "педик", "траха"]
 look_like_curse_but_not_one = ["оскорблять", "потреблять", "употреблять", "сабля", "колеблются", "колеблетесь",
                                "колеблется", "застрахуй", "подстрахуй", "страхуй"]
 
@@ -197,6 +197,13 @@ def callback():
                 random_id=0
             )
             return "ok"
+        elif "спасибо" or "благодарю" in text:
+            vk.messages.send(
+                user_id=user_id,
+                message="Пожалуйста! Обращайся, а я тебе помогу.",
+                random_id=0
+            )
+            return "ok"
         elif "как попасть" in text or "отбор" in text:
             vk.messages.send(
                 user_id=user_id,
@@ -219,7 +226,7 @@ def callback():
                 )
                 return "ok"
 
-            search_link = f"https://education.vk.company/search?query={urllib.parse.quote(str(user_last_topic))}"
+            search_link = f"https://www.google.com/search?query={urllib.parse.quote(str(user_last_topic))}"
             vk.messages.send(
                 user_id=user_id,
                 message=(
