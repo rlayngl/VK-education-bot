@@ -183,7 +183,7 @@ def callback():
                 random_id=0
             )
             return "ok"
-        elif "проект" in text:
+        elif "проекты" in text:
             vk.messages.send(
                 user_id=user_id,
                 message="Все проекты доступны по ссылке: https://education.vk.company/education_projects",
