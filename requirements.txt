@@ -1,3 +1,6 @@
-Flask
+Flask~=3.1.1
 vk-api
-rapidfuzz
+rapidfuzz~=3.13.0
+vk_api~=11.10.0
+dotenv~=0.9.9
+python-dotenv~=1.2.2

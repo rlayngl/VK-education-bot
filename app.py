@@ -1,17 +1,22 @@
+import os
+
 from flask import Flask, request
 import vk_api
 import json
 import re
+
+from dotenv import load_dotenv
 from rapidfuzz import fuzz
 import urllib.parse
 from collections import defaultdict
 
 app = Flask(__name__)
 
-TOKEN = "vk1.a.pHrouDYDYTT_kZ-PZ4IAxZEAALVGs2I_wciv8DSnN2LVsUR8epKl0Mg6DYaBGrh9iSuKs61nY4pQETpss3HDlmd8xKCmj3aDp2jolkI7W09i6D-2lEHQxudYaHpmuZ0xyFHHCImX2838UX67vFiqedj3VmlHIiKZsGcPabpebnphmH3yBJ8mkiM_BGUDNEx7Akl0QvEgFQdU9TXjiyXpEQ"
-CONFIRMATION_TOKEN = "2262c629"
+load_dotenv()
+token = os.getenv("token")
+confirmation_token = os.getenv("confirmation_token")
 
-vk_session = vk_api.VkApi(token=TOKEN)
+vk_session = vk_api.VkApi(token=token)
 vk = vk_session.get_api()
 
 with open("faq.json", "r", encoding="utf-8") as f:
@@ -89,7 +94,7 @@ def callback():
     data = request.json
 
     if data['type'] == 'confirmation':
-        return CONFIRMATION_TOKEN
+        return confirmation_token
 
     if data['type'] == 'message_new':
         user_id = data['object']['message']['from_id']
